@@ -24,9 +24,8 @@ jobs:
           context: .
           push: true
           tags: |
-            REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-            ghcr.io/${REPO_LOWER}:latest
-            ghcr.io/${${REPO_LOWER}:${{ github.sha }}
+            ghcr.io/${{ vars.PROJECT_NAME }}:latest
+            ghcr.io/${{ vars.PROJECT_NAME }}:${{ github.sha }}
       - name: Update GitOps repository
         shell: bash
         env:
@@ -43,11 +42,10 @@ jobs:
           git clone https://github.com/rslim087b/grade-api-gitops.git gitops
           cd gitops
           
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|image: ghcr.io/${REPO_LOWER}:.*|image: ghcr.io/${REPO_LOWER}:${{ github.sha }}|g" deployment.yaml
+            sed -i '' "s|image: ghcr.io/${{ vars.PROJECT_NAME }}:.*|image: ghcr.io/${{ vars.PROJECT_NAME }}:${{ github.sha }}|g" deployment.yaml
           else
-            sed -i "s|image: ghcr.io/${REPO_LOWER}:.*|image: ghcr.io/${REPO_LOWER}:${{ github.sha }}|g" deployment.yaml
+            sed -i "s|image: ghcr.io/${{ vars.PROJECT_NAME }}:.*|image: ghcr.io/${{ vars.PROJECT_NAME }}:${{ github.sha }}|g" deployment.yaml
           fi
           
           # Commit changes
