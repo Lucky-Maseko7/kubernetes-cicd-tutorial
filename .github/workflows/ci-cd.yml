@@ -4,6 +4,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+env:
+  REPO_NAME: ${{ github.repository }}
+  REPO_NAME_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
 jobs:
   build-and-push:
     runs-on: self-hosted
@@ -24,8 +28,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ env.REPO_NAME_LOWER }}:latest
+            ghcr.io/${{ env.REPO_NAME_LOWER }}:${{ github.sha }}
       - name: Update GitOps repository
         shell: bash
         env:
@@ -42,10 +46,13 @@ jobs:
           git clone https://github.com/${{ github.repository }}/grade-api-gitops.git gitops
           cd gitops
           
+          # Convert repository name to lowercase for Docker image references
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          
           if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i '' "s|image: ghcr.io/.*:.*|image: ghcr.io/${REPO_LOWER}:${{ github.sha }}|g" deployment.yaml
           else
-            sed -i "s|image: ghcr.io/${{ github.repository }}:.*|image: ghcr.io/${{ github.repository }}:${{ github.sha }}|g" deployment.yaml
+            sed -i "s|image: ghcr.io/.*:.*|image: ghcr.io/${REPO_LOWER}:${{ github.sha }}|g" deployment.yaml
           fi
           
           # Commit changes
